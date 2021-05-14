@@ -1,24 +1,25 @@
 import time
 import numpy as np
 import torch
-from hyperopt import tpe,Trials
+from hyperopt import tpe,Trials,rand,anneal
 from HPO.AutoHPO_V7V5 import fmin_hyperp_reduce,fmin_raw
 import time 
 from HPO.SearchSpace import AutoSelect_SearchSpace,MMdet_SearchSpace
 from HPO.MMdetProcess import MMdet_Pipeline
 
 class AutoSelect():
-    def __init__(self,metric_list,work_dir,max_eval,anno_root,gpu_id,valid=False,optimize_algo=None):
+    def __init__(self,cfg_path,metric_list,work_dir,max_eval,anno_root,gpu_id,valid=False,optimizer=None):
         self.searchspace = AutoSelect_SearchSpace
         self.gpu_id = gpu_id
         self.valid = valid
         self.work_dir = work_dir
+        self.cfg_path = cfg_path
         self.max_eval = max_eval
         self.metric_list = ["bbox_"+metric for metric in metric_list]
         self.anno_root = anno_root
-        self.algo = optimize_algo
+        self.algo = optimizer
     def objective(self,param):
-        cfg_path = "./faster_rcnn_"+param["backbone"]+".py"
+        cfg_path = self.cfg_path+"/faster_rcnn_"+param["backbone"]+".py"
         MMdetpipe = MMdet_Pipeline(cfg_path,self.work_dir,self.anno_root,self.gpu_id,self.valid)
         albu_train_transforms =[param["pixel_method"],param["color_method"]]
         albu_preprocess =  dict(type='Albu',transforms=albu_train_transforms,
@@ -54,9 +55,11 @@ class AutoSelect():
         tpe_trials = Trials()
         start_time = time.time()
         if self.algo == "HRA":
-            best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.searchspace, algo=tpe.suggest, trials=tpe_trials, max_evals=self.max_eval)
+            best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.searchspace, algo=tpe.suggest, trials=Trials(), max_evals=self.max_eval)
         else:
-            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.search_space,trials=Trials(),algo=self.algo.suggest,max_evals=self.max_eval)
+            optimizer_dict = {"tpe":tpe,"rand":rand,"anneal":anneal}
+            optimize_algo = optimizer_dict[self.algo]
+            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.search_space,trials=Trials(),algo=optimize_algo.suggest,max_evals=self.max_eval)
         end_time = time.time()
         print("##################################################################")
         print("##################################################################")
@@ -68,6 +71,7 @@ class AutoSelect():
         print(best_config)
         best_test_loss,backbone,color_method,pixel_method=self.BestConfig(best_config)
         return best_test_loss,backbone,color_method,pixel_method
+    
     def BestConfig(self,best):
         work_dir = self.work_dir+"/best_config"
         best_cfg_path = "./faster_rcnn_"+best["backbone"]+".py"
@@ -105,7 +109,7 @@ class AutoSelect():
             return test_result,best["backbone"],best["color_method"]["type"],best["pixel_method"]["type"]
 
 class MMdet_HPO():
-    def __init__(self,cfg_path,work_dir,max_eval,anno_path,gpu_id,valid=False,optimize_algo=None):
+    def __init__(self,cfg_path,work_dir,max_eval,anno_path,gpu_id,valid=False,optimizer=None):
         self.work_dir = work_dir
         self.cfg_path = cfg_path
         self.search_space = MMdet_SearchSpace
@@ -113,7 +117,7 @@ class MMdet_HPO():
         self.anno_path = anno_path
         self.gpu_id = gpu_id
         self.valid = valid
-        self.algo = optimize_algo
+        self.algo = optimizer
 
     def objective(self,config):
         scales = [int(config['model.rpn_head.anchor_generator.scales'])]
@@ -140,7 +144,9 @@ class MMdet_HPO():
         if self.algo == "HRA":
             best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.searchspace, algo=tpe.suggest, trials=Trials(), max_evals=self.max_eval)
         else:
-            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.search_space,trials=Trials(),algo=self.algo.suggest,max_evals=self.max_eval)
+            optimizer_dict = {"tpe":tpe,"rand":rand,"anneal":anneal}
+            optimize_algo = optimizer_dict[self.algo]
+            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.search_space,trials=Trials(),algo=optimize_algo.suggest,max_evals=self.max_eval)
         end_time = time.time()
         print("##################################################################")
         print("##################################################################")
