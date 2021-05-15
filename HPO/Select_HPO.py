@@ -187,7 +187,7 @@ class MMdet_HPO():
 
         MMdetBest.cfg.checkpoint_config = dict(interval=2)
         MMdetBest.cfg.runner = dict(type='EpochBasedRunner', max_epochs=self.max_epoch)
-        MMdetBest.cfg.data.test.ann_file = self.anno_path+"/instances_val.json"  
+        MMdetBest.cfg.data.test.ann_file = self.anno_path+"/instances_test.json"  
         MMdetBest.cfg.load_from = self.load_path     
 
         try:
