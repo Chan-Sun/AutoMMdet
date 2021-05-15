@@ -1,30 +1,30 @@
 import pandas as pd
 import time
 import sys
-code_path = "/home/hustwen/sun_chen/Optical_VOC/"
+code_path = "/home/dlsuncheng/Optical_VOC/"
+
 sys.path.append(code_path+"AutoMMdet")
 from HPO.Select_HPO import MMdet_HPO
 
-max_eval = 4
-#fewshot_list = [5,10,15,20]
-fewshot_list = [5]
+max_eval = 40
+fewshot_list = [5,10,15,20]
 best_record = []
-trial_times = 1
-gpu_id = 0
+trial_times = 10
+gpu_id = 2
 
 ###choose from "tpe","rand","HRA","anneal"
-optimize_algo = "HRA"
+optimize_algo = "anneal"
 
 config_path = code_path+ "/AutoMMdet/Optical/Optimize_Cascade/Cascade_Configs/Cascade_ResNet_50.py"
 current_time = time.strftime("%Y-%m-%d-%H-%M", time.localtime())
 save_dir = code_path + "/Work_dir/"+current_time+"/Optical_"+optimize_algo+"/"
-data_root = code_path + "/Dataset/Optical/optical-img/test-A-image/"
-load_path = code_path + "/checkpoints/optical/epoch_22.pth"
+data_root = code_path + "/Optical_Dataset/optical-img/test-A-image/"
+load_path = code_path + "/checkpoints/optical/epoch_22_old.pth"
 
 for shot in fewshot_list:
     fewshot_dir = save_dir + str(shot)+"_shot/"
     for trial in range(trial_times):
-        anno_root = code_path + "Dataset/Optical/coco/" + str(shot) + "_shot/split-"+str(trial+1)
+        anno_root = code_path + "Optical_Dataset/coco/" + str(shot) + "_shot/split-"+str(trial+1)
         current_time = time.strftime("%Y-%m-%d-%H-%M", time.localtime())
         work_dir = fewshot_dir+"trial_"+str(trial+1)+"/"
         optical_mmdet = MMdet_HPO(config_path,work_dir,optimizer=optimize_algo)
@@ -34,7 +34,7 @@ for shot in fewshot_list:
         optical_mmdet.data_path = data_root
         optical_mmdet.anno_path = anno_root
         optical_mmdet.load_path = load_path
-        optical_mmdet.max_epoch = 2
+        optical_mmdet.max_epoch = 10
 
         best_config,best_valid_loss, best_loss = optical_mmdet.HPO()
         best_record.append([best_config,best_valid_loss,best_loss])

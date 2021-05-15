@@ -8,6 +8,7 @@ from HPO.Select_HPO import AutoSelect
 multi_metric = ["mAP_50","mAP","mAP_75","mAP_s","mAP_l","mAP_m"]
 single_metric = ["mAP_50"]
 max_eval = 40
+max_epoch = 10
 trial_times = 10
 fewshot_num = [5,10,15,20]
 best_record = []
@@ -20,7 +21,8 @@ data_root = code_path + "Dataset/PascalVOC_lite/Test_JPEGImages/"
 load_path = code_path + "/checkpoints/pascalvoc_lite/checkpoints/"
 
 current_time = time.strftime("%Y-%m-%d-%H-%M", time.localtime())
-save_dir = code_path + "/Work_dir/"+current_time+"/single_fewshot_voc_"+optimize_algo               
+save_dir = code_path + "/Work_dir/"+current_time+"/single_fewshot_voc_"+optimize_algo 
+
 for shot in fewshot_num:
     fewshot_dir = save_dir + str(shot)+"_shot/"
     for trial in range(trial_times):
@@ -34,7 +36,8 @@ for shot in fewshot_num:
         VOC_select.max_eval = max_eval
         VOC_select.data_root = data_root
         VOC_select.anno_root = anno_root
-
+        VOC_select.max_epoch = max_epoch
+        
         best_test_loss,backbone,color_method,pixel_method = VOC_select.hpo_select()
         best_record=[best_test_loss,backbone,color_method,pixel_method]
         best_record_pd = pd.DataFrame(best_record,columns=["loss","backbone","color_method","pixel_method"])
