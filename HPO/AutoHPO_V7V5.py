@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 from sklearn import tree
-from hyperopt import fmin,space_eval,hp,pyll
+from HPO.hyperopt_yxc import fmin,space_eval,hp,pyll
 from scipy.stats import norm,stats
     
 class AutoHPO():

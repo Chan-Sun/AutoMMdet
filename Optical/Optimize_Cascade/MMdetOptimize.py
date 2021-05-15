@@ -3,17 +3,17 @@ import time
 import sys
 code_path = "/home/hustwen/sun_chen/Optical_VOC/"
 sys.path.append(code_path+"AutoMMdet")
-from HPO.Selecct_HPO import MMdet_HPO
+from HPO.Select_HPO import MMdet_HPO
 
-max_eval = 2
+max_eval = 4
 #fewshot_list = [5,10,15,20]
 fewshot_list = [5]
 best_record = []
-trial_times = 2
+trial_times = 1
 gpu_id = 0
 
 ###choose from "tpe","rand","HRA","anneal"
-optimize_algo = "tpe"
+optimize_algo = "HRA"
 
 config_path = code_path+ "/AutoMMdet/Optical/Optimize_Cascade/Cascade_Configs/Cascade_ResNet_50.py"
 current_time = time.strftime("%Y-%m-%d-%H-%M", time.localtime())

@@ -1,0 +1,23 @@
+主要算法都在hyperopt\base.py中，包括domain,fmin
+
+sample没法看到和分布相关的采样
+fmin
+
+进度条的代码在fmin.py 的421行 原因：113行的self.show_progressbar = show_progressbar#True 以及276行的self.run
+
+domain：
+[注]：where `memo` is a dictionary mapping `Apply` nodes to their
+            computed values, and `ctrl` is a `Ctrl` instance for communicating
+            with a Trials database.
+
+hyperopt.pyll.stochastic：sample values from configuration spaces ，常用的概率函数 hp是在其基础上 | 采样函数sample在其中 
+hyperopt.pyll:和参数空间相关，其中的scope用于参数表达式
+hyperopt.pyll.base：scope在，作用是创建图节点，scope = SymbolTable()
+
+pyll_utils：参数空间中的hp.各种函数都在
+
+
+tpe:属于算法选择过程，tpe算法
+=======================================
+from hyperopt import (hp, fmin, space_eval,Trials)
+·封装的很好，怎么看都看不到采样分布。因为它把数据从A类型洗到B类型，返回的是类、对象，看不到里面的数值

@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import torch
-from hyperopt import tpe,Trials,rand,anneal
+from HPO.hyperopt_yxc import tpe,Trials,rand,anneal
 from HPO.AutoHPO_V7V5 import fmin_hyperp_reduce,fmin_raw
 import time 
 from HPO.SearchSpace import AutoSelect_SearchSpace,MMdet_SearchSpace
@@ -63,7 +63,7 @@ class AutoSelect():
         else:
             optimizer_dict = {"tpe":tpe,"rand":rand,"anneal":anneal}
             optimize_algo = optimizer_dict[self.algo]
-            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.search_space,trials=Trials(),algo=optimize_algo.suggest,max_evals=self.max_eval)
+            best_config,results,space_save = fmin_raw(fn=self.objective,space=self.searchspace,trials=Trials(),algo=optimize_algo.suggest,max_evals=self.max_eval)
         end_time = time.time()
         print("##################################################################")
         print("##################################################################")
@@ -126,6 +126,8 @@ class MMdet_HPO():
         self.load_path = None
         self.max_epoch = 2
     def objective(self,config):
+        print(config['model.rpn_head.anchor_generator.scales'])
+        print(type(config['model.rpn_head.anchor_generator.scales']))
         scales = [int(config['model.rpn_head.anchor_generator.scales'])]
         del config['model.rpn_head.anchor_generator.scales']
         config['model.rpn_head.anchor_generator.scales'] = scales
@@ -154,7 +156,7 @@ class MMdet_HPO():
     def HPO(self):
         start_time = time.time()
         if self.algo == "HRA":
-            best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.searchspace, algo=tpe.suggest, trials=Trials(), max_evals=self.max_eval)
+            best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.search_space, algo=tpe.suggest, trials=Trials(), max_evals=self.max_eval)
         else:
             optimizer_dict = {"tpe":tpe,"rand":rand,"anneal":anneal}
             optimize_algo = optimizer_dict[self.algo]

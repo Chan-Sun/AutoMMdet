@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 code_path = "/home/hustwen/sun_chen/Optical_VOC/"
 sys.path.append(code_path+"AutoMMdet")
-from HPO.Selecct_HPO import AutoSelect
+from HPO.Select_HPO import AutoSelect
 
 multi_metric = ["mAP_50","mAP","mAP_75","mAP_s","mAP_l","mAP_m"]
 single_metric = ["mAP_50"]
