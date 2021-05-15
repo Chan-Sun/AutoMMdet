@@ -1,9 +1,11 @@
+code_path = "/home/hustwen/sun_chen/Optical_VOC/"
+sys.path.append(code_path+"AutoMMdet")
+
 from hyperopt import tpe,rand,anneal
 import pandas as pd
 import time
+import sys
 from HPO.Selecct_HPO import MMdet_HPO
-
-code_path = "/home/hustwen/sun_chen/Optical_VOC/"
 
 config_path = code_path+ "/AutoMMdet/Optical/Optimize_Cascade/Cascade_Configs/Cascade_ResNet_50.py"
 
@@ -27,5 +29,5 @@ for shot in fewshot_list:
         best_config, best_loss = optical_mmdet.HPO()
         best_record.append([best_config, best_loss])
         best_record_pd = pd.DataFrame(best_record)
-        save_path = work_dir+"/"+str(shot)+"_shot_"+optimize_algo+"_trial_"+str(trial+1)+"best_record.csv"
+        save_path = work_dir+"/"+str(shot)+"-shot_"+optimize_algo+"_trial-"+str(trial+1)+"_best_record.csv"
         best_record_pd.to_csv(save_path)

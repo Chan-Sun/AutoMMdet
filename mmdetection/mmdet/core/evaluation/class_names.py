@@ -65,7 +65,7 @@ def imagenet_vid_classes():
 
 
 def coco_classes():
-    return {"scallop","echinus","starfish","holothurian","waterweeds"]
+    return ["scallop","echinus","starfish","holothurian","waterweeds"]
         
     # [
     #     'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',

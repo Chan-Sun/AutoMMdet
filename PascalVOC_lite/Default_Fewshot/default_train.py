@@ -1,11 +1,14 @@
+code_path = "/home/hustwen/sun_chen/Optical_VOC/"
+sys.path.append(code_path+"AutoMMdet")
+
 import time
-from HPO.MMdetProcess import MMdet_Pipeline
 import torch 
 import pandas as pd
-fewshot_list = [5,10,15,20]
+import sys
+from HPO.MMdetProcess import MMdet_Pipeline
 
-code_path = "/home/hustwen/sun_chen/Optical_VOC/"
-cfg_path = code_path+"AutoMMdet/PascalVOC_lite/Default_Fewshot/faster_rcnn_r50.py
+fewshot_list = [5,10,15,20]
+cfg_path = code_path+"AutoMMdet/PascalVOC_lite/Default_Fewshot/faster_rcnn_r50.py"
 
 record = []
 for fewshot in fewshot_list:
@@ -30,7 +33,7 @@ for fewshot in fewshot_list:
         except:
             result = 0
             torch.cuda.empty_cache()
-        record.append([fewshot,trial,result])
+        record.append([fewshot,trial,result["bbox_mAP_50"]])
         best_record_pd = pd.DataFrame(record)
-        save_path = work_dir+"/"+str(fewshot)+"_shot"+"_trial_"+str(trial+1)+"best_record.csv"
+        save_path = work_dir+"/"+str(fewshot)+"-shot"+"_trial-"+str(trial+1)+"_record.csv"
         best_record_pd.to_csv(save_path)
