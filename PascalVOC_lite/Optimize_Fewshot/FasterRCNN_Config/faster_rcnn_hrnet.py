@@ -1,8 +1,8 @@
 classes =  ("dog","cat","horse","sheep","cow")
 
-load_from = "../../fewshot_checkpoints/hrnet.pth"
+load_from = "None"
 
-work_dir = "/home/hustwen/sun_chen/Rapid_Support/work_dir/20210507/hrnet/"
+work_dir = "None"
 
 model = dict(
     type = "FasterRCNN",

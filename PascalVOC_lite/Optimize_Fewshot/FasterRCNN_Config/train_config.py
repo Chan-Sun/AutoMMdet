@@ -1,6 +1,6 @@
 dataset_type = 'CocoDataset'
-data_root = "/home/hustwen/sun_chen/Rapid_Support/Dataset/PacalVOC_lite/Test_JPEGImages"#/home/hustwen/sun_chen/Rapid_Support/Dataset/PacalVOC_lite/JPEGImages/"
-anno_root = "/home/hustwen/sun_chen/Rapid_Support/Dataset/PacalVOC_lite/coco_test/coco_test_5/"
+data_root = "None"
+anno_root = "None"
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),

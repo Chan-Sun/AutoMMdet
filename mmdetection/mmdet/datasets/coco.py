@@ -20,6 +20,8 @@ from .custom import CustomDataset
 class CocoDataset(CustomDataset):
 
     CLASSES = ("scallop","echinus","starfish","holothurian","waterweeds")
+    # ("dog","cat","horse","sheep","cow")
+    # 
     
     # ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
     #            'train', 'truck', 'boat', 'traffic light', 'fire hydrant',

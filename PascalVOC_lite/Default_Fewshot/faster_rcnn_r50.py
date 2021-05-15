@@ -1,10 +1,9 @@
 dataset_type = 'CocoDataset'
 
-data_root = '../../Test_JPEGImages/'
-anno_root = '/home/hustwen/sun_chen/Rapid_Support/Dataset/PacalVOC_lite/coco_test/coco_test_5/'
-load_from = '../../fewshot_checkpoints/r50.pth'
-work_dir = '/home/hustwen/sun_chen/Rapid_Support/work_dir/20210510/r50_fewshot/5_shot'
-
+data_root = "None"
+anno_root = "None"
+load_from = "None"
+work_dir = "None"
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
@@ -122,7 +121,7 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     warmup_iters=500,
-    warmup_ratio=0.05,
+    warmup_ratio=0.0001,
     step=[8, 10])
 runner = dict(type='EpochBasedRunner', max_epochs=15)
 checkpoint_config = dict(interval=1)

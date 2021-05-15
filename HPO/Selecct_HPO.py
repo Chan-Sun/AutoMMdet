@@ -8,19 +8,24 @@ from HPO.SearchSpace import AutoSelect_SearchSpace,MMdet_SearchSpace
 from HPO.MMdetProcess import MMdet_Pipeline
 
 class AutoSelect():
-    def __init__(self,cfg_path,metric_list,work_dir,max_eval,anno_root,gpu_id,valid=False,optimizer=None):
+    def __init__(self,cfg_path,metric_list,work_dir,optimizer=None):
+
         self.searchspace = AutoSelect_SearchSpace
-        self.gpu_id = gpu_id
-        self.valid = valid
+        self.gpu_id = 1
+        self.valid = False
         self.work_dir = work_dir
         self.cfg_path = cfg_path
-        self.max_eval = max_eval
+        self.max_eval = 40
         self.metric_list = ["bbox_"+metric for metric in metric_list]
-        self.anno_root = anno_root
+        self.data_root = None
+        self.anno_root = None
+        self.load_path = None
         self.algo = optimizer
+
     def objective(self,param):
         cfg_path = self.cfg_path+"/faster_rcnn_"+param["backbone"]+".py"
-        MMdetpipe = MMdet_Pipeline(cfg_path,self.work_dir,self.anno_root,self.gpu_id,self.valid)
+
+        MMdetpipe = MMdet_Pipeline(cfg_path,self.work_dir,self.data_root,self.anno_root,self.gpu_id,self.valid)
         albu_train_transforms =[param["pixel_method"],param["color_method"]]
         albu_preprocess =  dict(type='Albu',transforms=albu_train_transforms,
                                 bbox_params=dict(type='BboxParams',format='pascal_voc',
@@ -36,9 +41,9 @@ class AutoSelect():
 
         MMdetpipe.cfg.data.test.ann_file = self.anno_root+"/instances_val.json"
 
-        ckp_path = self.work_dir+"/latest.pth"
         try:
             MMdetpipe.MMdet_train(MMdetpipe.cfg)
+            ckp_path = self.work_dir+"/latest.pth"
             result = MMdetpipe.MMdet_Valid(ckp_path,MMdetpipe.cfg,False,False,None)
         except:
             torch.cuda.empty_cache()
@@ -52,7 +57,6 @@ class AutoSelect():
             return 1-multi_result
 
     def hpo_select(self):
-        tpe_trials = Trials()
         start_time = time.time()
         if self.algo == "HRA":
             best_config,results,_ = fmin_hyperp_reduce(fn=self.objective, space=self.searchspace, algo=tpe.suggest, trials=Trials(), max_evals=self.max_eval)
@@ -75,7 +79,7 @@ class AutoSelect():
     def BestConfig(self,best):
         work_dir = self.work_dir+"/best_config"
         best_cfg_path = "./faster_rcnn_"+best["backbone"]+".py"
-        MMdetBest = MMdet_Pipeline(best_cfg_path,work_dir,self.anno_root,self.gpu_id,True) 
+        MMdetBest = MMdet_Pipeline(best_cfg_path,work_dir,self.data_root,self.anno_root,self.gpu_id,True) 
 
         albu_train_transforms =[best["pixel_method"],best["color_method"]]
         albu_preprocess =  dict(type='Albu',transforms=albu_train_transforms,
@@ -109,30 +113,38 @@ class AutoSelect():
             return test_result,best["backbone"],best["color_method"]["type"],best["pixel_method"]["type"]
 
 class MMdet_HPO():
-    def __init__(self,cfg_path,work_dir,max_eval,anno_path,gpu_id,valid=False,optimizer=None):
+    def __init__(self,cfg_path,work_dir,optimizer=None):
         self.work_dir = work_dir
         self.cfg_path = cfg_path
         self.search_space = MMdet_SearchSpace
-        self.max_eval = max_eval
-        self.anno_path = anno_path
-        self.gpu_id = gpu_id
-        self.valid = valid
+        self.max_eval = 40
+        self.data_path = None
+        self.anno_path = None
+        self.gpu_id = 0
+        self.valid = False
         self.algo = optimizer
-
+        self.load_path = None
+        self.max_epoch = 2
     def objective(self,config):
         scales = [int(config['model.rpn_head.anchor_generator.scales'])]
         del config['model.rpn_head.anchor_generator.scales']
         config['model.rpn_head.anchor_generator.scales'] = scales
         work_dir = self.work_dir+"/MMdet_HPO"
-        MMdetpipe = MMdet_Pipeline(self.cfg_path,work_dir,self.anno_path,self.gpu_id,self.valid)
+        MMdetpipe = MMdet_Pipeline(self.cfg_path,work_dir,self.data_path,self.anno_path,self.gpu_id,self.valid)
         MMdetpipe.cfg.merge_from_dict(config)
+
+        MMdetpipe.cfg.checkpoint_config = dict(interval=2)
+        MMdetpipe.cfg.runner = dict(type='EpochBasedRunner', max_epochs=self.max_epoch)
+        MMdetpipe.cfg.data.test.ann_file = self.anno_path+"/instances_val.json"
+        MMdetpipe.cfg.load_from = self.load_path
         try:
-            MMdetpipe.MMdet_train(MMdetpipe.cfg)
+            MMdetpipe.MMdet_train(MMdetpipe.cfg)            
             ckp_pth = work_dir+"/latest.pth"
-            result = MMdetpipe.MMdet_Valid(MMdetpipe.cfg,ckp_pth)
+            result = MMdetpipe.MMdet_Valid(ckp_pth,MMdetpipe.cfg,False,False,None)
         except:
             torch.cuda.empty_cache()
             return 1
+        
         if len(result.keys()) == 0:
             print("Testing process is overfitting")
             return 1
@@ -166,20 +178,24 @@ class MMdet_HPO():
         del best['model.rpn_head.anchor_generator.scales']
         best['model.rpn_head.anchor_generator.scales'] = scales 
         work_dir = self.work_dir+"/best_config"
-        MMdetBest = MMdet_Pipeline(self.cfg_path,work_dir,self.anno_path,self.gpu_id,True) 
+        MMdetBest = MMdet_Pipeline(self.cfg_path,work_dir,self.data_path,self.anno_path,self.gpu_id,False)
+
         MMdetBest.cfg.merge_from_dict(best)
         MMdetBest.cfg.checkpoint_config = dict(interval=2)
-        MMdetBest.cfg.runner = dict(type='EpochBasedRunner', max_epochs=10)
-        MMdetBest.cfg.data.test.ann_file = self.anno_root+"/instances_test.json"       
-        try:
-            MMdetBest.MMdet_train(MMdetBest.cfg)     
-            ckp_path = work_dir+"/latest.pth"
-            result = MMdetBest.MMdet_Valid(ckp_path, MMdetBest.cfg, False, False, None)
-            return 1-result["bbox_mAP_50"]
-        except:
-            torch.cuda.empty_cache()
-            print("cuda failed")      
-            return 1
+
+        MMdetBest.cfg.runner = dict(type='EpochBasedRunner', max_epochs=2)
+
+        MMdetBest.cfg.data.test.ann_file = self.anno_path+"/instances_val.json"  
+        MMdetBest.cfg.load_from = self.load_path     
+        # try:
+        MMdetBest.MMdet_train(MMdetBest.cfg)     
+        ckp_path = work_dir+"/latest.pth"
+        result = MMdetBest.MMdet_Valid(ckp_path, MMdetBest.cfg, False, False, None)
+        return 1-result["bbox_mAP_50"]
+        # except:
+        #     torch.cuda.empty_cache()
+        #     print("cuda failed")      
+        #     return 1
     def CombineColumn(self,keyword,banword,results):
         results[keyword]=0
         combineList = [column for column in results.columns.values if keyword+"_" in column and banword not in column]

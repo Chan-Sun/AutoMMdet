@@ -108,6 +108,6 @@ model = dict(
 
 _base_ = "./train_config.py"
 
-load_from = "../../fewshot_checkpoints/r50.pth"
+load_from = "None"
 
-work_dir = "/home/hustwen/sun_chen/Rapid_Support/work_dir/20210509/r50_fewshot/5_shot"
+work_dir = "None"

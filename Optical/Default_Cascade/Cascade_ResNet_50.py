@@ -187,10 +187,10 @@ model = dict(
 
 dataset_type = 'CocoDataset'
 
-data_root = "/home/hustwen/sun_chen/Rapid_Support/Dataset/Optical/optical-img/test-A-image/"
-anno_root = '/home/hustwen/sun_chen/Rapid_Support/Dataset/Optical/coco/Few-shot/'
-load_from = '/home/hustwen/sun_chen/Rapid_Support/work_dir/20210501/optical/full_sample/epoch_22.pth'
-work_dir = "/home/hustwen/sun_chen/Rapid_Support/work_dir/20210502/optical/few_shot"
+data_root = "None"
+anno_root = "None"
+load_from = "None"
+work_dir = "None"
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),

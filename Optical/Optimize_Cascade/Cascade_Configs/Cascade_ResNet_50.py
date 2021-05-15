@@ -185,7 +185,8 @@ model = dict(
             score_thr=0.001,
             nms=dict(type='nms', iou_threshold=0.5),
             max_per_img=100)))
+            
 _base_ = "./train_config.py"
 
-load_from = '/home/hustwen/sun_chen/Rapid_Support/work_dir/20210501/optical/full_sample/epoch_22.pth'
-work_dir = "/home/hustwen/sun_chen/Rapid_Support/work_dir/20210502/optical/few_shot"
+load_from = "None"
+work_dir = "None"

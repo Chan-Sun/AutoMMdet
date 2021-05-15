@@ -19,15 +19,18 @@ from tqdm import tqdm
 import time 
 
 class MMdet_Pipeline():
-    def __init__(self,cfg_path,work_dir,anno_root,gpu_id,valid = False):
+    def __init__(self,cfg_path,work_dir,data_root,anno_root,gpu_id,valid = False):
         self.valid = valid
         self.gpu_id = gpu_id
         self.cfg_path = cfg_path
         self.cfg = Config.fromfile(cfg_path)
         self.cfg.work_dir = work_dir
         self.cfg.gpu_ids=[self.gpu_id]
+        self.cfg.data.train.img_prefix = data_root
         self.cfg.data.train.ann_file = anno_root+"/instances_train.json"
+        self.cfg.data.val.img_prefix = data_root
         self.cfg.data.val.ann_file = anno_root+"/instances_val.json"
+        self.cfg.data.test.img_prefix = data_root
         self.cfg.data.test.ann_file = anno_root+"/instances_test.json"
 
         mmcv.mkdir_or_exist(osp.abspath(work_dir))
